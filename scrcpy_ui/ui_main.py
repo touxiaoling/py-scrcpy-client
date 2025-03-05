@@ -8,10 +8,8 @@
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
 
-from PySide6.QtCore import *  # type: ignore
-from PySide6.QtGui import *  # type: ignore
-from PySide6.QtWidgets import *  # type: ignore
-
+from PySide6.QtCore import QSize,Qt,QCoreApplication,QMetaObject
+from PySide6.QtWidgets import QWidget,QHBoxLayout,QVBoxLayout,QLabel,QPushButton,QSpacerItem,QSizePolicy,QComboBox,QCheckBox,QLayout
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -89,6 +87,10 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout.addWidget(self.button_back)
 
+        self.coord_label = QLabel(self.centralwidget)
+        self.coord_label.setObjectName("coord_label")
+        self.horizontalLayout.addWidget(self.coord_label)
+
         self.horizontalSpacer_2 = QSpacerItem(
             40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum
         )
@@ -113,6 +115,7 @@ class Ui_MainWindow(object):
         MainWindow.setWindowTitle(
             QCoreApplication.translate("MainWindow", "MainWindow", None)
         )
+        self.coord_label.setText(QCoreApplication.translate("MainWindow", "Coord", None))
         self.label_2.setText(QCoreApplication.translate("MainWindow", "Device", None))
         self.flip.setText(QCoreApplication.translate("MainWindow", "Flip", None))
         self.label.setText(

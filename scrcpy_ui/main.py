@@ -4,7 +4,7 @@ from typing import Optional
 from adbutils import adb
 from PySide6.QtGui import QImage, QKeyEvent, QMouseEvent, QPixmap, Qt
 from PySide6.QtWidgets import QApplication, QMainWindow, QMessageBox
-from ui_main import Ui_MainWindow
+from .ui_main import Ui_MainWindow
 
 import scrcpy
 
@@ -39,7 +39,7 @@ class MainWindow(QMainWindow):
             flip=self.ui.flip.isChecked(),
             bitrate=1000000000,
             encoder_name=encoder_name,
-            max_fps=60,
+            max_fps=15,
         )
         self.client.add_listener(scrcpy.EVENT_INIT, self.on_init)
         self.client.add_listener(scrcpy.EVENT_FRAME, self.on_frame)
@@ -98,9 +98,10 @@ class MainWindow(QMainWindow):
             if focused_widget is not None:
                 focused_widget.clearFocus()
             ratio = self.max_width / max(self.client.resolution)
-            self.client.control.touch(
-                evt.position().x() / ratio, evt.position().y() / ratio, action
-            )
+            w,h = self.client.resolution
+            x, y = evt.position().x()/ ratio, evt.position().y()/ ratio
+            self.client.control.touch(x , y , action)
+            self.ui.coord_label.setText(f"X: {x:4.0f} Y: {y:4.0f} \nW: {x/w:.3f} H: {y/h:.3f}")
 
         return handler
 
@@ -174,8 +175,8 @@ def main():
         "-m",
         "--max_width",
         type=int,
-        default=800,
-        help="Set max width of the window, default 800",
+        default=720,
+        help="Set max width of the window, default 720",
     )
     parser.add_argument(
         "-d",

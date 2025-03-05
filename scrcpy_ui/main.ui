@@ -36,6 +36,13 @@
          </spacer>
         </item>
         <item>
+         <widget class="QLabel" name="coord_label">
+          <property name="text">
+           <string>coord_label</string>
+          </property>
+         </widget>
+        </item>
+        <item>
          <widget class="QLabel" name="label_2">
           <property name="text">
            <string>Device</string>
