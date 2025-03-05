@@ -243,6 +243,7 @@ class Client:
                         frame = frame.to_ndarray(format="bgr24")
                         if self.flip:
                             frame = frame[:, ::-1, :]
+                            frame = np.ascontiguousarray(frame)
                         self.last_frame = frame
                         self.resolution = (frame.shape[1], frame.shape[0])
                         self.__send_to_listeners(EVENT_FRAME, frame)
