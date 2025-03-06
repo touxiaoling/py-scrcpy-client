@@ -101,7 +101,10 @@ class MainWindow(QMainWindow):
             w,h = self.client.resolution
             x, y = evt.position().x()/ ratio, evt.position().y()/ ratio
             self.client.control.touch(x , y , action)
-            self.ui.coord_label.setText(f"X: {x:4.0f} Y: {y:4.0f} \nW: {x/w:.3f} H: {y/h:.3f}")
+            if self.client.last_frame is not None:
+                bgr24 = self.client.last_frame[int(y), int(x)]
+                light = 0.114*bgr24[0]+0.587*bgr24[1]+0.299*bgr24[2]
+            self.ui.coord_label.setText(f"X: {x:4.0f} Y: {y:4.0f} \nW: {x/w:.3f} H: {y/h:.3f}\ndx:{x-w//2:4.0f} dy:{y-h//2:4.0f}\nrx:{(x-w//2)/1080:4.3f} ry:{(y-h//2)/1920:4.3f}\nlight: {light:4.1f}")
 
         return handler
 
