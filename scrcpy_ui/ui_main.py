@@ -23,7 +23,7 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
-        MainWindow.resize(523, 566)
+        MainWindow.resize(575, 738)
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
         self.horizontalLayout_3 = QHBoxLayout(self.centralwidget)
@@ -44,7 +44,7 @@ class Ui_MainWindow(object):
 
         self.combo_device = QComboBox(self.centralwidget)
         self.combo_device.setObjectName(u"combo_device")
-        self.combo_device.setMinimumSize(QSize(100, 0))
+        self.combo_device.setMinimumSize(QSize(150, 0))
 
         self.horizontalLayout_4.addWidget(self.combo_device)
 
@@ -74,11 +74,19 @@ class Ui_MainWindow(object):
         self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
         self.horizontalLayout_2.setSizeConstraint(QLayout.SizeConstraint.SetFixedSize)
         self.horizontalLayout_2.setContentsMargins(-1, -1, 0, -1)
+        self.horizontalSpacer_5 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout_2.addItem(self.horizontalSpacer_5)
+
         self.label = QLabel(self.centralwidget)
         self.label.setObjectName(u"label")
         self.label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.horizontalLayout_2.addWidget(self.label)
+
+        self.horizontalSpacer_6 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout_2.addItem(self.horizontalSpacer_6)
 
 
         self.verticalLayout.addLayout(self.horizontalLayout_2)
@@ -93,7 +101,7 @@ class Ui_MainWindow(object):
 
         self.coord_label = QLabel(self.centralwidget)
         self.coord_label.setObjectName(u"coord_label")
-        self.coord_label.setMinimumSize(QSize(200, 0))
+        self.coord_label.setMinimumSize(QSize(150, 0))
 
         self.horizontalLayout.addWidget(self.coord_label)
 

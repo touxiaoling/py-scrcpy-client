@@ -5,13 +5,25 @@ from adbutils import adb
 from PySide6.QtGui import QImage, QKeyEvent, QMouseEvent, QPixmap, Qt
 from PySide6.QtWidgets import QApplication, QMainWindow, QMessageBox
 from .ui_main import Ui_MainWindow
-
+from . import config as cfg
+from . import utils
 import scrcpy
 
 if not QApplication.instance():
     app = QApplication([])
 else:
     app = QApplication.instance()
+
+
+def turn_coord_info(x, y, w, h, light):
+    coord_info = [
+        f"x:{x:4.0f} y:{y:4.0f} ex{x-w:4.0f} ey:{y-h:4.0f}",
+        f"w: {x/w:.3f} h: {y/h:.3f}",
+        f"mx:{x-w//2:4.0f} my:{y-h//2:4.0f}",
+        f"rx:{(x-w//2)*1920/h:4.0f} ry:{(y-h//2)*1080/w:4.0f}",
+        f"light: {light:4.1f}",
+    ]
+    return "\n".join(coord_info)
 
 
 class MainWindow(QMainWindow):
@@ -72,12 +84,22 @@ class MainWindow(QMainWindow):
         self.ui.combo_device.setCurrentText(device)
         # Restart service
         if getattr(self, "client", None):
+            device_info = cfg.devices[device]
+            if device_info.ssh_tunneling_serial:
+                local_port = device_info.serial.split(":")[1]
+                utils.start_ssh_tunnel_in_thread(
+                    local_port,
+                    device_info.ssh_tunneling_serial,
+                    device_info.ssh_tunneling_host,
+                    ssh_user=device_info.ssh_tunneling_user,
+                )
             self.client.stop()
+            adb.connect(device)
             self.client.device = adb.device(serial=device)
 
     def list_devices(self):
         self.ui.combo_device.clear()
-        items = [i.serial for i in adb.device_list()]
+        items = [i.serial for i in cfg.device_list()]
         self.ui.combo_device.addItems(items)
         return items
 
@@ -98,13 +120,15 @@ class MainWindow(QMainWindow):
             if focused_widget is not None:
                 focused_widget.clearFocus()
             ratio = self.max_width / max(self.client.resolution)
-            w,h = self.client.resolution
-            x, y = evt.position().x()/ ratio, evt.position().y()/ ratio
-            self.client.control.touch(x , y , action)
+            w, h = self.client.resolution
+            x, y = evt.position().x() / ratio, evt.position().y() / ratio
+            self.client.control.touch(x, y, action)
+            light = 0
             if self.client.last_frame is not None:
                 bgr24 = self.client.last_frame[int(y), int(x)]
-                light = 0.114*bgr24[0]+0.587*bgr24[1]+0.299*bgr24[2]
-            self.ui.coord_label.setText(f"X: {x:4.0f} Y: {y:4.0f} \nW: {x/w:.3f} H: {y/h:.3f}\ndx:{x-w//2:4.0f} dy:{y-h//2:4.0f}\nrx:{(x-w//2)/1080:4.3f} ry:{(y-h//2)/1920:4.3f}\nlight: {light:4.1f}")
+                light = 0.114 * bgr24[0] + 0.587 * bgr24[1] + 0.299 * bgr24[2]
+            coord_info = turn_coord_info(x, y, w, h, light)
+            self.ui.coord_label.setText(coord_info)
 
         return handler
 
@@ -178,7 +202,7 @@ def main():
         "-m",
         "--max_width",
         type=int,
-        default=720,
+        default=640,
         help="Set max width of the window, default 720",
     )
     parser.add_argument(
