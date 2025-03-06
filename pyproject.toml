@@ -9,6 +9,7 @@ dependencies = [
     "adbutils>=2.8.0",
     "av>=14.2.0",
     "numpy>=2.2.3",
+    "pydantic>=2.10.6",
     "pyside6>=6.8.2.1",
 ]
 
