@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>575</width>
-    <height>738</height>
+    <width>448</width>
+    <height>528</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -21,7 +21,7 @@
        <enum>QLayout::SizeConstraint::SetFixedSize</enum>
       </property>
       <item>
-       <layout class="QHBoxLayout" name="horizontalLayout_4" stretch="0,0,0,0,0,0,0">
+       <layout class="QHBoxLayout" name="horizontalLayout_4" stretch="0,0,0,0,0">
         <item>
          <spacer name="horizontalSpacer_3">
           <property name="orientation">
@@ -56,20 +56,6 @@
          <widget class="QCheckBox" name="flip">
           <property name="text">
            <string>Flip</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="button_home">
-          <property name="text">
-           <string>HOME</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="button_back">
-          <property name="text">
-           <string>BACK</string>
           </property>
          </widget>
         </item>
@@ -138,13 +124,26 @@
        </layout>
       </item>
       <item>
-       <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,0,0">
+       <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,0,0,0,0">
         <property name="spacing">
          <number>6</number>
         </property>
         <property name="sizeConstraint">
          <enum>QLayout::SizeConstraint::SetFixedSize</enum>
         </property>
+        <item>
+         <widget class="QLabel" name="coord_label">
+          <property name="minimumSize">
+           <size>
+            <width>180</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>coord_label</string>
+          </property>
+         </widget>
+        </item>
         <item>
          <spacer name="horizontalSpacer">
           <property name="orientation">
@@ -159,15 +158,16 @@
          </spacer>
         </item>
         <item>
-         <widget class="QLabel" name="coord_label">
-          <property name="minimumSize">
-           <size>
-            <width>150</width>
-            <height>0</height>
-           </size>
-          </property>
+         <widget class="QPushButton" name="button_home">
           <property name="text">
-           <string>coord_label</string>
+           <string>HOME</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="button_back">
+          <property name="text">
+           <string>BACK</string>
           </property>
          </widget>
         </item>
