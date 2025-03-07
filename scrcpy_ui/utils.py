@@ -34,55 +34,23 @@ def make_ssh_tunneling(local_port, remote_serial, remote_host, ssh_key_path=None
             remote_host = f"{ssh_user}@{remote_host}"
 
         # 添加端口转发参数
-        ssh_command.extend(["-L", f"{local_port}:{remote_serial}", remote_host, "-N"])
+        ssh_command.extend(["-L", f"{local_port}:{remote_serial}", remote_host,"-N"])
 
         _logger.info(f"SSH命令: {ssh_command}")
+        _ssh_tunneling_dict[local_port] = (remote_serial, remote_host, ssh_key_path, ssh_user)
         # 启动SSH进程
-        ssh_process = subprocess.Popen(
-            ssh_command,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-        )
-
-        # 记录日志
-        _logger.info(f"SSH隧道已启动：本地端口 {local_port} 转发到 {remote_host}:{remote_serial}")
+        ssh_process = subprocess.run(ssh_command, check=True)
 
         return ssh_process
 
+    except subprocess.CalledProcessError as e:
+        _logger.error(f"SSH隧道进程返回非零退出码: {e}")
     except Exception as e:
         _logger.error(f"启动SSH隧道时发生错误: {e}")
         raise
-
-
-def monitor_ssh_tunnel(local_port):
-    """
-    监控SSH隧道进程，确保其正常运行。
-
-    :param ssh_process: SSH进程对象
-    """
-    ssh_process = _ssh_tunneling_dict[local_port]
-    try:
-        while True:
-            # 检查进程是否仍在运行
-            if ssh_process.poll() is not None:
-                _logger.error("SSH隧道进程已终止")
-                del _ssh_tunneling_dict[local_port]
-                break
-
-            # 读取标准输出和错误输出
-            stdout, stderr = ssh_process.communicate()
-            if stdout:
-                _logger.info(f"SSH隧道输出: {stdout.decode().strip()}")
-            if stderr:
-                _logger.error(f"SSH隧道错误: {stderr.decode().strip()}")
-
-            # 每隔一段时间检查一次
-            time.sleep(5)
-
-    except Exception as e:
-        del _ssh_tunneling_dict[local_port]
-        _logger.error(f"监控SSH隧道时发生错误: {e}")
-        raise
+    finally:
+        if local_port in _ssh_tunneling_dict:
+            del _ssh_tunneling_dict[local_port]
 
 
 def start_ssh_tunnel_in_thread(local_port, remote_serial, remote_host, ssh_key_path=None, ssh_user=None):
@@ -99,12 +67,14 @@ def start_ssh_tunnel_in_thread(local_port, remote_serial, remote_host, ssh_key_p
         # 启动SSH隧道
         if local_port in _ssh_tunneling_dict:
             return
-        ssh_process = make_ssh_tunneling(local_port, remote_serial, remote_host, ssh_key_path, ssh_user)
-        _ssh_tunneling_dict[local_port] = ssh_process
+
         # 启动监控线程
-        monitor_thread = threading.Thread(target=monitor_ssh_tunnel, args=(local_port,))
+        monitor_thread = threading.Thread(
+            target=make_ssh_tunneling, args=(local_port, remote_serial, remote_host, ssh_key_path, ssh_user)
+        )
         monitor_thread.daemon = True  # 设置为守护线程，主程序退出时自动结束
         monitor_thread.start()
+        time.sleep(1)
 
         _logger.info("SSH隧道监控线程已启动")
 
