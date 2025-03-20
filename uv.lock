@@ -4,7 +4,7 @@ requires-python = ">=3.13"
 
 [[package]]
 name = "adbutils"
-version = "2.8.3"
+version = "2.8.0"
 source = { registry = "https://pypi.tuna.tsinghua.edu.cn/simple" }
 dependencies = [
     { name = "apkutils2" },
@@ -13,12 +13,12 @@ dependencies = [
     { name = "requests" },
     { name = "retry" },
 ]
-sdist = { url = "https://pypi.tuna.tsinghua.edu.cn/packages/c8/d6/21a52f1902b239dc093847c39af74f7eba1664e7edc290a76920a2b1564e/adbutils-2.8.3.tar.gz", hash = "sha256:135701e780698b94dcf1acdf2473b6e5d05861fc2dfe32f4fb3c9b5a0b45cbe9", size = 185226 }
+sdist = { url = "https://pypi.tuna.tsinghua.edu.cn/packages/2c/11/c3279c764702c4243cf93674e526d437b57af5765da71b34d02aa351808a/adbutils-2.8.0.tar.gz", hash = "sha256:2e6f580b412014783d054febcb95c7ff3962e4120b80b340419790f71f2d4489", size = 185060 }
 wheels = [
-    { url = "https://pypi.tuna.tsinghua.edu.cn/packages/4d/49/47d6d6f80dbd112fa167131634fff7a9433167d05d8118684414e15e0bdf/adbutils-2.8.3-py3-none-macosx_10_9_intel.macosx_10_9_x86_64.macosx_10_10_intel.macosx_10_10_x86_64.whl", hash = "sha256:c24df4495f0b961d44205aa0bc677d5e7b12aa74a059371f556a762b58d27ef1", size = 6061134 },
-    { url = "https://pypi.tuna.tsinghua.edu.cn/packages/c0/dc/d45811809ea78056861e42867a0beb42e8b06d75af7dbab679a1b06779ca/adbutils-2.8.3-py3-none-manylinux1_x86_64.whl", hash = "sha256:34ad82524b2c1a4d7e95ef48693f7b6a540bf09893b29d5ed7e48ddae4ef4156", size = 3254820 },
-    { url = "https://pypi.tuna.tsinghua.edu.cn/packages/d9/0d/5efa487516283c45dceea7a9a60672a7b9cb808ebd39c0deb0a7b73133c7/adbutils-2.8.3-py3-none-win32.whl", hash = "sha256:f8849ec98d01e0e00504b4dd0f85480f672513fb7d86adf705bfecdb85e29ceb", size = 3000835 },
-    { url = "https://pypi.tuna.tsinghua.edu.cn/packages/a8/1f/c2114cf6079d2f9acf56015eec9cf5490d46151fa5c680f487bb14b19647/adbutils-2.8.3-py3-none-win_amd64.whl", hash = "sha256:5f97a694ffea60d91a29d3a1760941accdfb39c04a6234b54c6fa1fdce67ceae", size = 3000840 },
+    { url = "https://pypi.tuna.tsinghua.edu.cn/packages/ff/79/af5ab65f36aa5f21dd461173bc23a18b0631fc5e35343c7159eac79e80e2/adbutils-2.8.0-py3-none-macosx_10_9_intel.macosx_10_9_x86_64.macosx_10_10_intel.macosx_10_10_x86_64.whl", hash = "sha256:88c9beacbffc52df3740dced9b44230e7f28148d9e7d8bc4e0666f5d503b1cb2", size = 6060857 },
+    { url = "https://pypi.tuna.tsinghua.edu.cn/packages/f8/16/c0410916d20617ad823542144022bb24335ab5d46f6b498200e28c151fcb/adbutils-2.8.0-py3-none-manylinux1_x86_64.whl", hash = "sha256:6becbb3f4c4cf4bb06c3519588b1c63832e12abd629d2a98a7f7e244f83ea9db", size = 3254543 },
+    { url = "https://pypi.tuna.tsinghua.edu.cn/packages/1d/6a/10e56a2190f133e43913891f7a620d1e5b93fc6f426d470956f1d961cc64/adbutils-2.8.0-py3-none-win32.whl", hash = "sha256:7aaf43015b49d39151461881b752e81af2010b38bc9a70b0948b5e1e1bcc4b73", size = 3000561 },
+    { url = "https://pypi.tuna.tsinghua.edu.cn/packages/bc/f5/47848166277b9b480f1a3c9653aea2157c7b3e6088d4f5d59646ea98b948/adbutils-2.8.0-py3-none-win_amd64.whl", hash = "sha256:739d69c8e266c4d65512ff77551ef57b2178e0870bdfda1bef034dd0f2ad9433", size = 3000563 },
 ]
 
 [[package]]
@@ -332,7 +332,7 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
-    { name = "adbutils", specifier = ">=2.8.0" },
+    { name = "adbutils", specifier = "==2.8.0" },
     { name = "av", specifier = ">=14.2.0" },
     { name = "numpy", specifier = ">=2.2.3" },
     { name = "pydantic", specifier = ">=2.10.6" },

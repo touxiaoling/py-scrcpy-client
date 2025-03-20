@@ -6,25 +6,25 @@ readme = "README.md"
 license = "MIT"
 requires-python = ">=3.13"
 dependencies = [
-    "adbutils>=2.8.0",
-    "av>=14.2.0",
-    "numpy>=2.2.3",
-    "pydantic>=2.10.6",
-    "pyside6>=6.8.2.1",
+  "adbutils==2.8.0",
+  "av>=14.2.0",
+  "numpy>=2.2.3",
+  "pydantic>=2.10.6",
+  "pyside6>=6.8.2.1",
 ]
+[project.scripts]
+scrcpy-ui = "scrcpy_ui.main"
 
 [tool.setuptools]
-packages = ["scrpy", "scrcpy_ui"] 
+packages = ["scrcpy", "scrcpy_ui"]
 
 [tool.uv]
-package = false
 no-binary-package = ["av"]
 #compile-bytecode = true
 
 [[tool.uv.index]]
 url = "https://pypi.tuna.tsinghua.edu.cn/simple"
 default = true
-
 
 [tool.ruff]
 line-length = 128
