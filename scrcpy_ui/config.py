@@ -11,14 +11,12 @@ class Device(BaseModel):
     ssh_tunneling_serial: str | None
 
 
-devices: dict[str, Device] = {}
-with Path("config.toml").open("rb") as f:
-    config: dict = tomllib.load(f)
-    for device_info in config["device"]:
-        device = Device(**device_info)
-        devices[device.serial] = device
-
-
-def device_list():
-    for device in devices.values():
-        yield device
+def devices_info():
+    devices: dict[str, Device] = {}
+    with Path("config.toml").open("rb") as f:
+        config: dict = tomllib.load(f)
+        for device_info in config["device"]:
+            device = Device(**device_info)
+            devices[device.serial] = device
+            
+    return devices

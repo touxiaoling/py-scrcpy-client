@@ -1,5 +1,8 @@
 from argparse import ArgumentParser
 from typing import Optional
+from typing import Callable
+import logging
+import queue
 
 from adbutils import adb
 from PySide6.QtGui import QImage, QKeyEvent, QMouseEvent, QPixmap, Qt
@@ -13,6 +16,9 @@ if not QApplication.instance():
     app = QApplication([])
 else:
     app = QApplication.instance()
+
+
+_logger = logging.getLogger(__name__)
 
 
 def turn_coord_info(x, y, w, h, bgr24):
@@ -40,22 +46,8 @@ class MainWindow(QMainWindow):
         self.max_width = max_width
 
         # Setup devices
-        self.devices = self.list_devices()
-        if serial:
-            self.choose_device(serial)
-        self.device = adb.device(serial=self.ui.combo_device.currentText())
-        self.alive = True
-
-        # Setup client
-        self.client = scrcpy.Client(
-            device=self.device,
-            flip=self.ui.flip.isChecked(),
-            bitrate=1000000000,
-            encoder_name=encoder_name,
-            max_fps=15,
-        )
-        self.client.add_listener(scrcpy.EVENT_INIT, self.on_init)
-        self.client.add_listener(scrcpy.EVENT_FRAME, self.on_frame)
+        self.ui.combo_device.clear()
+        self.ui.combo_device.addItems(self.devices)
 
         # Bind controllers
         self.ui.button_home.clicked.connect(self.on_click_home)
@@ -63,7 +55,7 @@ class MainWindow(QMainWindow):
 
         # Bind config
         self.ui.combo_device.currentTextChanged.connect(self.choose_device)
-        self.ui.flip.stateChanged.connect(self.on_flip)
+        self.ui.combo_resolution.currentTextChanged.connect(self.set_resolution)
 
         # Bind mouse event
         self.ui.label.mousePressEvent = self.on_mouse_event(scrcpy.ACTION_DOWN)
@@ -74,9 +66,52 @@ class MainWindow(QMainWindow):
         self.keyPressEvent = self.on_key_event(scrcpy.ACTION_DOWN)
         self.keyReleaseEvent = self.on_key_event(scrcpy.ACTION_UP)
 
+        # Setup client
+        self.frames = queue.Queue(maxsize=1)
+        self.client = None
+        self.device = None
+        self.alive = True
+        self.choose_device(self.ui.combo_device.currentText())
+
+    @property
+    def devices(self):
+        devices = [v.serial for k, v in cfg.devices_info().items()]
+        return devices
+
     @property
     def device_info(self):
-        return cfg.devices[self.device.serial]
+        return cfg.devices_info()[self.device.serial]
+
+    def client_init(self, device, on_init: Callable, on_frame: Callable, encoder_name: Optional[str] = None):
+        _logger.info(f"Init client for device: {device.serial}")
+        client = scrcpy.Client(
+            device=device,
+            bitrate=1000000000,
+            encoder_name=encoder_name,
+            max_fps=15,
+        )
+        client.add_listener(scrcpy.EVENT_INIT, on_init)
+        client.add_listener(scrcpy.EVENT_FRAME, on_frame)
+        _logger.info(f"Client for device: {device.serial} initialized")
+        return client
+
+    def client_start(self):
+        device_info = self.device_info
+        _logger.info(f"Start client for device: {self.device.serial}")
+        try:
+            if device_info.ssh_tunneling_serial:
+                local_port = self.device_info.serial.split(":")[1]
+                utils.start_ssh_tunnel_in_thread(
+                    local_port,
+                    device_info.ssh_tunneling_serial,
+                    device_info.ssh_tunneling_host,
+                    ssh_user=device_info.ssh_tunneling_user,
+                )
+            adb.connect(self.device.serial)
+            self.client.start(daemon_threaded=True)
+            _logger.info(f"Client for device: {self.device.serial} started")
+        except Exception as e:
+            _logger.error(str(e))
 
     def choose_device(self, device):
         if device not in self.devices:
@@ -87,17 +122,20 @@ class MainWindow(QMainWindow):
 
         # Ensure text
         self.ui.combo_device.setCurrentText(device)
+        self.ui.combo_resolution.setCurrentIndex(0)
         # Restart service
         if getattr(self, "client", None):
             self.client.stop()
-            self.device = adb.device(serial=device)
-            self.client.device = self.device
 
-    def list_devices(self):
-        self.ui.combo_device.clear()
-        items = [i.serial for i in cfg.device_list()]
-        self.ui.combo_device.addItems(items)
-        return items
+        device = adb.device(serial=device)
+
+        self.device = device
+        self.client = self.client_init(device, self.on_init, self.on_frame)
+        self.client_start()
+
+    def set_resolution(self, resolution):
+        if resolution != "default":
+            self.device.shell(f"wm size {resolution}")
 
     def on_flip(self, _):
         self.client.flip = self.ui.flip.isChecked()
@@ -115,6 +153,8 @@ class MainWindow(QMainWindow):
             focused_widget = QApplication.focusWidget()
             if focused_widget is not None:
                 focused_widget.clearFocus()
+            if self.client.resolution is None:
+                return
             ratio = self.max_width / max(self.client.resolution)
             x, y = evt.position().x() / ratio, evt.position().y() / ratio
             w, h = self.client.resolution
@@ -126,7 +166,10 @@ class MainWindow(QMainWindow):
             except (IndexError, TypeError):
                 bgr24 = (0, 0, 0)
 
-            self.client.control.touch(x, y, action)
+            try:
+                self.client.control.touch(x, y, action)
+            except OSError as e:
+                _logger.error(f"Touch error: {e}")
 
             coord_info = turn_coord_info(x, y, w, h, bgr24)
             self.ui.coord_label.setText(coord_info)
@@ -170,15 +213,24 @@ class MainWindow(QMainWindow):
         if code in hard_code:
             return hard_code[code]
 
-        print(f"Unknown keycode: {code}")
+        _logger.error(f"Unknown keycode: {code}")
         return -1
 
     def on_init(self):
         self.setWindowTitle(f"Serial: {self.client.device_name}")
 
     def on_frame(self, frame):
-        app.processEvents()
+        try:
+            self.frames.get_nowait()
+        except queue.Empty:
+            pass
+        self.frames.put(frame)
+
+    def show_fame(self, frame):
         if frame is not None:
+            if self.client.resolution is None:
+                return
+
             ratio = self.max_width / max(self.client.resolution)
             image = QImage(
                 frame,
@@ -198,6 +250,8 @@ class MainWindow(QMainWindow):
 
 
 def main():
+    logging.basicConfig(level=logging.DEBUG)
+
     parser = ArgumentParser(description="A simple scrcpy client")
     parser.add_argument(
         "-m",
@@ -219,19 +273,12 @@ def main():
     m.show()
 
     while m.alive:
+        app.processEvents()
         try:
-            if m.device_info.ssh_tunneling_serial:
-                local_port = m.device_info.serial.split(":")[1]
-                utils.start_ssh_tunnel_in_thread(
-                    local_port,
-                    m.device_info.ssh_tunneling_serial,
-                    m.device_info.ssh_tunneling_host,
-                    ssh_user=m.device_info.ssh_tunneling_user,
-                )
-            adb.connect(m.device.serial)
-            m.client.start()
-        except Exception as e:
-            print(e)
+            frame = m.frames.get(timeout=0.1)
+            m.show_fame(frame)
+        except queue.Empty:
+            pass
 
 
 if __name__ == "__main__":
