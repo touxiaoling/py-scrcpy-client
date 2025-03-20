@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>448</width>
-    <height>528</height>
+    <width>435</width>
+    <height>616</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -21,7 +21,7 @@
        <enum>QLayout::SizeConstraint::SetFixedSize</enum>
       </property>
       <item>
-       <layout class="QHBoxLayout" name="horizontalLayout_4" stretch="0,0,0,0,0">
+       <layout class="QHBoxLayout" name="horizontalLayout_4" stretch="0,0,0,0,0,0">
         <item>
          <spacer name="horizontalSpacer_3">
           <property name="orientation">
@@ -46,17 +46,46 @@
          <widget class="QComboBox" name="combo_device">
           <property name="minimumSize">
            <size>
-            <width>150</width>
+            <width>140</width>
             <height>0</height>
            </size>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QCheckBox" name="flip">
+         <widget class="QLabel" name="label_3">
           <property name="text">
-           <string>Flip</string>
+           <string>Resolution</string>
           </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QComboBox" name="combo_resolution">
+          <item>
+           <property name="text">
+            <string>default</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>1080x1920</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>1440x2560</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>1206x2622</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>1080x2340</string>
+           </property>
+          </item>
          </widget>
         </item>
         <item>

@@ -15,15 +15,15 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QCheckBox, QComboBox, QHBoxLayout,
-    QLabel, QLayout, QMainWindow, QPushButton,
-    QSizePolicy, QSpacerItem, QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QApplication, QComboBox, QHBoxLayout, QLabel,
+    QLayout, QMainWindow, QPushButton, QSizePolicy,
+    QSpacerItem, QVBoxLayout, QWidget)
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
-        MainWindow.resize(448, 528)
+        MainWindow.resize(435, 616)
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
         self.horizontalLayout_3 = QHBoxLayout(self.centralwidget)
@@ -44,14 +44,24 @@ class Ui_MainWindow(object):
 
         self.combo_device = QComboBox(self.centralwidget)
         self.combo_device.setObjectName(u"combo_device")
-        self.combo_device.setMinimumSize(QSize(150, 0))
+        self.combo_device.setMinimumSize(QSize(140, 0))
 
         self.horizontalLayout_4.addWidget(self.combo_device)
 
-        self.flip = QCheckBox(self.centralwidget)
-        self.flip.setObjectName(u"flip")
+        self.label_3 = QLabel(self.centralwidget)
+        self.label_3.setObjectName(u"label_3")
 
-        self.horizontalLayout_4.addWidget(self.flip)
+        self.horizontalLayout_4.addWidget(self.label_3)
+
+        self.combo_resolution = QComboBox(self.centralwidget)
+        self.combo_resolution.addItem("")
+        self.combo_resolution.addItem("")
+        self.combo_resolution.addItem("")
+        self.combo_resolution.addItem("")
+        self.combo_resolution.addItem("")
+        self.combo_resolution.setObjectName(u"combo_resolution")
+
+        self.horizontalLayout_4.addWidget(self.combo_resolution)
 
         self.horizontalSpacer_4 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
@@ -126,7 +136,13 @@ class Ui_MainWindow(object):
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"MainWindow", None))
         self.label_2.setText(QCoreApplication.translate("MainWindow", u"Device", None))
-        self.flip.setText(QCoreApplication.translate("MainWindow", u"Flip", None))
+        self.label_3.setText(QCoreApplication.translate("MainWindow", u"Resolution", None))
+        self.combo_resolution.setItemText(0, QCoreApplication.translate("MainWindow", u"default", None))
+        self.combo_resolution.setItemText(1, QCoreApplication.translate("MainWindow", u"1080x1920", None))
+        self.combo_resolution.setItemText(2, QCoreApplication.translate("MainWindow", u"1440x2560", None))
+        self.combo_resolution.setItemText(3, QCoreApplication.translate("MainWindow", u"1206x2622", None))
+        self.combo_resolution.setItemText(4, QCoreApplication.translate("MainWindow", u"1080x2340", None))
+
         self.label.setText(QCoreApplication.translate("MainWindow", u"\n"
 "                                                <html><head/><body><p><span\n"
 "                                                style=\"\n"
