@@ -4,10 +4,11 @@ from typing import Callable
 import logging
 import queue
 
-from adbutils import adb
+import adbutils
 from PySide6.QtGui import QImage, QKeyEvent, QMouseEvent, QPixmap, Qt
-from PySide6.QtWidgets import QApplication, QMainWindow, QMessageBox
+from PySide6.QtWidgets import QApplication, QMainWindow, QMessageBox, QDialog
 from .ui_main import Ui_MainWindow
+from .ui_add_device import Ui_AddDeviceWindow
 from . import config as cfg
 from . import utils
 import scrcpy
@@ -33,6 +34,49 @@ def turn_coord_info(x, y, w, h, bgr24):
     return "\n".join(coord_info)
 
 
+class AddDeviceWindow(QDialog):
+    def __init__(self):
+        super().__init__()
+        self.ui = Ui_AddDeviceWindow()
+        self.ui.setupUi(self)
+        self.ui.okButton.clicked.connect(self.on_click_ok)
+
+        self.device_info = None
+
+    def on_click_ok(self):
+        try:
+            self.device_info = self.get_device_info()
+            self.accept()
+        except Exception as e:
+            _logger.error(f"{e}")
+
+    def get_device_info(self):
+        name = self.ui.nameEdit.text()
+        serial = self.ui.serialEdit.text()
+        tunnel = self.ui.tunnelEdit.text()
+        if tunnel:
+            device_serial, tunnel_serial = serial.split(":", maxsplit=1)
+            device_serial = f"localhost:{device_serial}"
+
+            if "@" in tunnel:
+                tunnel_user, tunnel = tunnel.split("@")
+            else:
+                tunnel_user = "root"
+
+            tunnel_host = tunnel
+
+            device_info = cfg.Device(
+                name=name,
+                serial=device_serial,
+                ssh_tunneling_user=tunnel_user,
+                ssh_tunneling_host=tunnel_host,
+                ssh_tunneling_serial=tunnel_serial,
+            )
+        else:
+            device_info = cfg.Device(name=name, serial=serial)
+        return device_info
+
+
 class MainWindow(QMainWindow):
     def __init__(
         self,
@@ -47,7 +91,8 @@ class MainWindow(QMainWindow):
 
         # Setup devices
         self.ui.combo_device.clear()
-        self.ui.combo_device.addItems(self.devices)
+        self.ui.combo_device.addItem("Add device")
+        self.ui.combo_device.addItems(self.devices_info.keys())
 
         # Bind controllers
         self.ui.button_home.clicked.connect(self.on_click_home)
@@ -69,18 +114,17 @@ class MainWindow(QMainWindow):
         # Setup client
         self.frames = queue.Queue(maxsize=1)
         self.client = None
-        self.device = None
+        self.device: adbutils.AdbDevice = None
         self.alive = True
-        self.choose_device(self.ui.combo_device.currentText())
+
+        if self.devices_info:
+            self.choose_device(next(iter(self.devices_info)))
+        else:
+            self.choose_device(self.ui.combo_device.currentText())
 
     @property
-    def devices(self):
-        devices = [v.serial for k, v in cfg.devices_info().items()]
-        return devices
-
-    @property
-    def device_info(self):
-        return cfg.devices_info()[self.device.serial]
+    def devices_info(self):
+        return cfg.devices_info()
 
     def client_init(self, device, on_init: Callable, on_frame: Callable, encoder_name: Optional[str] = None):
         _logger.info(f"Init client for device: {device.serial}")
@@ -95,43 +139,48 @@ class MainWindow(QMainWindow):
         _logger.info(f"Client for device: {device.serial} initialized")
         return client
 
-    def client_start(self):
-        device_info = self.device_info
+    def client_start(self, device_info: cfg.Device):
         _logger.info(f"Start client for device: {self.device.serial}")
         try:
             if device_info.ssh_tunneling_serial:
-                local_port = self.device_info.serial.split(":")[1]
+                local_port = device_info.serial.split(":")[1]
                 utils.start_ssh_tunnel_in_thread(
                     local_port,
                     device_info.ssh_tunneling_serial,
                     device_info.ssh_tunneling_host,
                     ssh_user=device_info.ssh_tunneling_user,
                 )
-            adb.connect(self.device.serial)
+            adbutils.adb.connect(device_info.serial)
             self.client.start(daemon_threaded=True)
             _logger.info(f"Client for device: {self.device.serial} started")
         except Exception as e:
             _logger.error(str(e))
 
-    def choose_device(self, device):
-        if device not in self.devices:
-            msgBox = QMessageBox()
-            msgBox.setText(f"Device serial [{device}] not found!")
-            msgBox.exec()
-            return
-
+    def choose_device(self, name):
+        if name == "Add device":
+            add_device_window = AddDeviceWindow()
+            add_device_window.exec()
+            device_info = add_device_window.device_info
+            if device_info is not None:
+                cfg.add_device(device_info)
+                self.ui.combo_device.addItem(device_info.name)
+                name = device_info.name
+            else:
+                return
+        else:
+            device_info = self.devices_info[name]
         # Ensure text
-        self.ui.combo_device.setCurrentText(device)
+        self.ui.combo_device.setCurrentText(name)
         self.ui.combo_resolution.setCurrentIndex(0)
         # Restart service
         if getattr(self, "client", None):
             self.client.stop()
 
-        device = adb.device(serial=device)
+        device = adbutils.adb.device(serial=device_info.serial)
 
         self.device = device
         self.client = self.client_init(device, self.on_init, self.on_frame)
-        self.client_start()
+        self.client_start(device_info)
 
     def set_resolution(self, resolution):
         if resolution != "default":

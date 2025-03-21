@@ -11,6 +11,7 @@ dependencies = [
   "numpy>=2.2.3",
   "pydantic>=2.10.6",
   "pyside6>=6.8.2.1",
+  "tomli-w>=1.2.0",
 ]
 [project.scripts]
 scrcpy-ui = "scrcpy_ui.main"
