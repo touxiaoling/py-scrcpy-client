@@ -58,17 +58,11 @@ class AddDeviceWindow(QDialog):
             device_serial, tunnel_serial = serial.split(":", maxsplit=1)
             device_serial = f"localhost:{device_serial}"
 
-            if "@" in tunnel:
-                tunnel_user, tunnel = tunnel.split("@")
-            else:
-                tunnel_user = "root"
-
             tunnel_host = tunnel
 
             device_info = cfg.Device(
                 name=name,
                 serial=device_serial,
-                ssh_tunneling_user=tunnel_user,
                 ssh_tunneling_host=tunnel_host,
                 ssh_tunneling_serial=tunnel_serial,
             )
@@ -97,6 +91,7 @@ class MainWindow(QMainWindow):
         # Bind controllers
         self.ui.button_home.clicked.connect(self.on_click_home)
         self.ui.button_back.clicked.connect(self.on_click_back)
+        self.ui.button_xml.clicked.connect(self.on_click_xml)
 
         # Bind config
         self.ui.combo_device.currentTextChanged.connect(self.choose_device)
@@ -148,7 +143,6 @@ class MainWindow(QMainWindow):
                     local_port,
                     device_info.ssh_tunneling_serial,
                     device_info.ssh_tunneling_host,
-                    ssh_user=device_info.ssh_tunneling_user,
                 )
             adbutils.adb.connect(device_info.serial)
             self.client.start(daemon_threaded=True)
@@ -196,6 +190,20 @@ class MainWindow(QMainWindow):
     def on_click_back(self):
         self.client.control.back_or_turn_screen_on(scrcpy.ACTION_DOWN)
         self.client.control.back_or_turn_screen_on(scrcpy.ACTION_UP)
+
+    def on_click_xml(self):
+        from lxml import etree
+        import time
+        now_time = time.time()
+        xml = self.device.dump_hierarchy()
+        use_time = time.time() - now_time
+        _logger.info(f"Dump hierarchy use time: {use_time:.2f}s")
+        xml = etree.fromstring(xml.encode("utf-8"))
+        xml = etree.tostring(xml, pretty_print=True, encoding="unicode")
+        msg = QMessageBox()
+        msg.setWindowTitle("XML")
+        msg.setText(xml)
+        msg.exec()
 
     def on_mouse_event(self, action=scrcpy.ACTION_DOWN):
         def handler(evt: QMouseEvent):

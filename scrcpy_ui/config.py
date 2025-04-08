@@ -9,9 +9,8 @@ config_path = Path("config.toml")
 class Device(BaseModel):
     serial: str
     name: str | None
-    ssh_tunneling_user: str | None
-    ssh_tunneling_host: str | None
-    ssh_tunneling_serial: str | None
+    ssh_tunneling_host: str | None = None
+    ssh_tunneling_serial: str | None = None
 
 
 def get_config():
