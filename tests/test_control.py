@@ -5,7 +5,6 @@
 See https://github.com/Genymobile/scrcpy/issues/673#issuecomment-516360374
 """
 
-
 import threading
 
 import scrcpy

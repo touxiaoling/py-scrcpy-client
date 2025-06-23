@@ -3,8 +3,10 @@ from typing import Optional
 from typing import Callable
 import logging
 import queue
+from pprint import pprint
 
 import adbutils
+import numpy as np
 from PySide6.QtGui import QImage, QKeyEvent, QMouseEvent, QPixmap, Qt
 from PySide6.QtWidgets import QApplication, QMainWindow, QMessageBox, QDialog
 from .ui_main import Ui_MainWindow
@@ -22,14 +24,17 @@ else:
 _logger = logging.getLogger(__name__)
 
 
-def turn_coord_info(x, y, w, h, bgr24):
-    light = 0.114 * bgr24[0] + 0.587 * bgr24[1] + 0.299 * bgr24[2]
+def turn_coord_info(x, y, w, h, rgb24):
+    rgb24 = np.uint64(np.asarray(rgb24) / 252 * 255)
+    light_scale = np.array([0.299, 0.587, 0.114], dtype=np.float64)
+    light = np.sum(rgb24 * light_scale)
+
     coord_info = [
-        f"x:{x:4.0f} y:{y:4.0f} ex{x-w:4.0f} ey:{y-h:4.0f}",
-        f"w: {x/w:.3f} h: {y/h:.3f}",
-        f"mx:{x-w//2:4.0f} my:{y-h//2:4.0f}",
-        f"rx:{(x-w//2)*1920/h:4.0f} ry:{(y-h//2)*1080/w:4.0f}",
-        f"light: {light:4.1f} bgr:{bgr24}",
+        f"x:{x:4.0f} y:{y:4.0f} ex{x - w:4.0f} ey:{y - h:4.0f}",
+        f"w: {x / w:.3f} h: {y / h:.3f}",
+        f"mx:{x - w // 2:4.0f} my:{y - h // 2:4.0f}",
+        f"rx:{(x - w // 2) * 1920 / h:4.0f} ry:{(y - h // 2) * 1080 / w:4.0f}",
+        f"light: {light:4.1f} rgb:{rgb24}",
     ]
     return "\n".join(coord_info)
 
@@ -194,12 +199,14 @@ class MainWindow(QMainWindow):
     def on_click_xml(self):
         from lxml import etree
         import time
+
         now_time = time.time()
         xml = self.device.dump_hierarchy()
         use_time = time.time() - now_time
         _logger.info(f"Dump hierarchy use time: {use_time:.2f}s")
         xml = etree.fromstring(xml.encode("utf-8"))
         xml = etree.tostring(xml, pretty_print=True, encoding="unicode")
+        pprint(xml)
         msg = QMessageBox()
         msg.setWindowTitle("XML")
         msg.setText(xml)
@@ -227,8 +234,8 @@ class MainWindow(QMainWindow):
                 self.client.control.touch(x, y, action)
             except OSError as e:
                 _logger.error(f"Touch error: {e}")
-
-            coord_info = turn_coord_info(x, y, w, h, bgr24)
+            rgb24 = (bgr24[2], bgr24[1], bgr24[0])
+            coord_info = turn_coord_info(x, y, w, h, rgb24)
             self.ui.coord_label.setText(coord_info)
 
         return handler

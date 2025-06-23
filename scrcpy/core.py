@@ -55,12 +55,8 @@ class Client:
         assert max_width >= 0, "max_width must be greater than or equal to 0"
         assert bitrate >= 0, "bitrate must be greater than or equal to 0"
         assert max_fps >= 0, "max_fps must be greater than or equal to 0"
-        assert (
-            -1 <= lock_screen_orientation <= 3
-        ), "lock_screen_orientation must be LOCK_SCREEN_ORIENTATION_*"
-        assert (
-            connection_timeout >= 0
-        ), "connection_timeout must be greater than or equal to 0"
+        assert -1 <= lock_screen_orientation <= 3, "lock_screen_orientation must be LOCK_SCREEN_ORIENTATION_*"
+        assert connection_timeout >= 0, "connection_timeout must be greater than or equal to 0"
         assert encoder_name in [
             None,
             "OMX.google.h264.encoder",
@@ -114,9 +110,7 @@ class Client:
         """
         for _ in range(self.connection_timeout // 100):
             try:
-                self.__video_socket = self.device.create_connection(
-                    Network.LOCAL_ABSTRACT, "scrcpy"
-                )
+                self.__video_socket = self.device.create_connection(Network.LOCAL_ABSTRACT, "scrcpy")
                 break
             except AdbError:
                 sleep(0.1)
@@ -128,9 +122,7 @@ class Client:
         if not len(dummy_byte) or dummy_byte != b"\x00":
             raise ConnectionError("Did not receive Dummy Byte!")
 
-        self.control_socket = self.device.create_connection(
-            Network.LOCAL_ABSTRACT, "scrcpy"
-        )
+        self.control_socket = self.device.create_connection(Network.LOCAL_ABSTRACT, "scrcpy")
         self.device_name = self.__video_socket.recv(64).decode("utf-8").rstrip("\x00")
         if not len(self.device_name):
             raise ConnectionError("Did not receive Device Name!")
@@ -144,23 +136,19 @@ class Client:
         Deploy server to android device
         """
         jar_name = "scrcpy-server.jar"
-        server_file_path = os.path.join(
-            os.path.abspath(os.path.dirname(__file__)), jar_name
-        )
+        server_file_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), jar_name)
         self.device.sync.push(server_file_path, f"/data/local/tmp/{jar_name}")
         commands = [
             f"CLASSPATH=/data/local/tmp/{jar_name}",
             "app_process",
             "/",
             "com.genymobile.scrcpy.Server",
-            "3.1",  # Scrcpy server version
+            "3.3.1",  # Scrcpy server version
             "log_level=info",
             f"max_size={self.max_width}",
             f"max_fps={self.max_fps}",
             f"video_bit_rate={self.bitrate}",
-            f"video_encoder={self.encoder_name}"
-            if self.encoder_name
-            else "video_encoder=OMX.google.h264.encoder",
+            f"video_encoder={self.encoder_name}" if self.encoder_name else "video_encoder=OMX.google.h264.encoder",
             f"video_codec={self.codec_name}" if self.codec_name else "video_codec=h264",
             "tunnel_forward=true",
             "send_frame_meta=false",
@@ -196,9 +184,7 @@ class Client:
         self.__send_to_listeners(EVENT_INIT)
 
         if threaded or daemon_threaded:
-            self.stream_loop_thread = threading.Thread(
-                target=self.__stream_loop, daemon=daemon_threaded
-            )
+            self.stream_loop_thread = threading.Thread(target=self.__stream_loop, daemon=daemon_threaded)
             self.stream_loop_thread.start()
         else:
             self.__stream_loop()

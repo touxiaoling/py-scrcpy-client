@@ -29,7 +29,7 @@ def make_ssh_tunneling(local_port, remote_serial, remote_host, ssh_key_path=None
             ssh_command.extend(["-i", ssh_key_path])
 
         # 添加端口转发参数
-        ssh_command.extend(["-o", "ControlMaster=no","-L", f"{local_port}:{remote_serial}", remote_host,"-N"])
+        ssh_command.extend(["-o", "ControlMaster=no", "-L", f"{local_port}:{remote_serial}", remote_host, "-N"])
 
         _logger.info(f"SSH命令: {ssh_command}")
         _ssh_tunneling_dict[local_port] = (remote_serial, remote_host, ssh_key_path)

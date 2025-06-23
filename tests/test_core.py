@@ -15,7 +15,6 @@ class Sync:
 
 
 class FakeADBDevice:
-
     sync = Sync()
 
     def __init__(self, data, wait=0):
@@ -35,17 +34,13 @@ class FakeADBDevice:
 
 
 def test_connection():
-    client = Client(
-        device=FakeADBDevice([[b"\x00", b"test", b"\x07\x80\x04\x38"], []], wait=3)
-    )
+    client = Client(device=FakeADBDevice([[b"\x00", b"test", b"\x07\x80\x04\x38"], []], wait=3))
     client.start(threaded=True)
     client.stop()
 
     with pytest.raises(ConnectionError):
         client = Client(
-            device=FakeADBDevice(
-                [[b"\x00", b"test", b"\x07\x80\x04\x38"], []], wait=1000
-            ),
+            device=FakeADBDevice([[b"\x00", b"test", b"\x07\x80\x04\x38"], []], wait=1000),
             connection_timeout=1000,
         )
         client.start(threaded=True)
@@ -53,9 +48,7 @@ def test_connection():
 
     # No Dummy Bytes Error
     with pytest.raises(ConnectionError) as e:
-        client = Client(
-            device=FakeADBDevice([[b"\x01", b"test", b"\x07\x80\x04\x38"], []])
-        )
+        client = Client(device=FakeADBDevice([[b"\x01", b"test", b"\x07\x80\x04\x38"], []]))
         client.start(threaded=True)
         client.stop()
     assert "Dummy Byte" in str(e.value)
@@ -91,9 +84,7 @@ def test_parse_video():
             client.stop()
 
     # Load test data
-    video_data = pickle.load(
-        (pathlib.Path(__file__).parent / "test_video_data.pkl").resolve().open("rb")
-    )
+    video_data = pickle.load((pathlib.Path(__file__).parent / "test_video_data.pkl").resolve().open("rb"))
     data = [
         [b"\x00", b"test", b"\x07\x80\x04\x38", None] + video_data + [b"OSError"],
         [],
